@@ -1,0 +1,32 @@
+name: Deploy Worker to Cloudflare
+
+on:
+  push:
+    branches:
+      - main # 如果你的默认分支叫 master，请修改为 master
+  workflow_dispatch: # 允许后续在 Actions 页面手动点击按钮触发部署
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    name: Build & Deploy
+    steps:
+      # 1. 拉取代码
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      # 2. 设置 Node.js 环境
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      # 3. 安装依赖并发布
+      - name: Deploy to Cloudflare Workers
+        working-directory: ./mail-worker
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          npm install
+          npx wrangler deploy
